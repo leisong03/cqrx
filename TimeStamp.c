@@ -12,11 +12,12 @@ int main(int argc, char** argv){
     FILE* fn;
     struct timeval tv;
 
-    if(argc<2){
-	fprintf(stderr,"Usage: %s output_filename\n",argv[0]);
+    if(argc<3){
+	fprintf(stderr,"Usage: %s portnum output_filename\n",argv[0]);
 	return(0);
     }
-    fn=fopen(argv[1],"w");
+    cport_nr=atoi(argv[1]);
+    fn=fopen(argv[2],"w");
     if(RS232_OpenComport(cport_nr, bdrate)){
 	printf("Can not open comport %d\n",cport_nr);
 	return(0);
@@ -43,14 +44,14 @@ int main(int argc, char** argv){
 		fflush(fn);
 	    }
 	    else{
-		printf("expect size %d, got size %d",sizeof(cqmsg),n);
+		printf("expect size %d, got size %d ",sizeof(cqmsg),n);
 
 		printf("%ld %ld: %s\n",(long int)tv.tv_sec,(long int)tv.tv_usec,(char *) buf);
 		fflush(stdout);
 		fprintf(fn,"%ld %ld: %s\n",(long int)tv.tv_sec,(long int)tv.tv_usec,(char *) buf);
 		fflush(fn);
 	    }
-		usleep(10000);
+		usleep(100000);
 
 	}
     }
