@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h> 
-#include <sys/time.h>
+#include <time.h>
 #include <netinet/in.h> 
 #include <unistd.h>
 #include "rs232.h"
@@ -56,6 +56,7 @@ int main(int argc, char** argv){
 #ifdef debug
 		    fprintf(stderr,"get a pkt\n");
 #endif
+		    ptm=localtime(&tv.tv_sec);
 		    strftime (time_string, sizeof (time_string), "%Y-%m-%d %H:%M:%S", ptm);
 		    unsigned char outbuf[4096];
 		    int outbufsize;
