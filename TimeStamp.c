@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h> 
+#include <sys/time.h>
 #include <netinet/in.h> 
+#include <unistd.h>
 #include "rs232.h"
 #include "CQmsg.h"
 int findapkt(int* start, int *length,unsigned char* msgbuf,int bufsize);
@@ -15,6 +17,8 @@ int main(int argc, char** argv){
     uint16_t msgcount=0;
     FILE* fn;
     struct timeval tv;
+    struct tm* ptm;
+    char time_string[40];
 
     if(argc<3){
 	fprintf(stderr,"Usage: %s portnum output_filename\n",argv[0]);
@@ -52,13 +56,15 @@ int main(int argc, char** argv){
 #ifdef debug
 		    fprintf(stderr,"get a pkt\n");
 #endif
+		    strftime (time_string, sizeof (time_string), "%Y-%m-%d %H:%M:%S", ptm);
 		    unsigned char outbuf[4096];
 		    int outbufsize;
 		    outbufsize=pktdecode(msgbuf+start+1,outbuf,length-2);
 		    if(!outbufsize){
 			fprintf(stderr,"pkt decode error\n");
 		    }
-		    printf("%ld %ld: ",(long int)tv.tv_sec,(long int)tv.tv_usec);
+		    //printf("%s: ",(long int)tv.tv_sec,(long int)tv.tv_usec);
+		    printf("%s: ",time_string);
 		    fprintf(fn,"%ld %ld: ",(long int)tv.tv_sec,(long int)tv.tv_usec);
 		    memcpy(&mymsg,outbuf,outbufsize);
 		    msgcount=msgcount-length-start+1;
