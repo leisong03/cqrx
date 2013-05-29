@@ -7,7 +7,7 @@
 #include "CQmsg.h"
 int main(int argc, char** argv){
     cqmsg mymsg;
-    int n,cport_nr=0,bdrate=19200;
+    int i,n,cport_nr=0,bdrate=19200;
     unsigned char buf[4096];
     FILE* fn;
     struct timeval tv;
@@ -28,16 +28,30 @@ int main(int argc, char** argv){
 	if(n>0){
 	    buf[n]=0;
 	    gettimeofday(&tv,NULL);
-	    if (n==sizeof(cqmsg))
+	    if (n==sizeof(cqmsg)){
 		printf("size matched\n");
-	    else
+		memcpy(&mymsg,buf,n);
+		printf("%d %d ",mymsg.ID,mymsg.Seq);
+		fprintf(fn,"%d %d ",mymsg.ID,mymsg.Seq);
+		for (i=0;i<mymsg.CQLEN;i++){
+		    printf("%02x %d",mymsg.symbol[i],mymsg.counter[i]);
+		    fprintf(fn,"%02x %d",mymsg.symbol[i],mymsg.counter[i]);
+		}
+		printf("\n");
+		fprintf(fn,"\n");
+		fflush(stdout);
+		fflush(fn);
+	    }
+	    else{
 		printf("expect size %d, got size %d",sizeof(cqmsg),n);
 
-	    printf("%ld %ld: %s\n",(long int)tv.tv_sec,(long int)tv.tv_usec,(char *) buf);
-	    fflush(stdout);
-	    fprintf(fn,"%ld %ld: %s\n",(long int)tv.tv_sec,(long int)tv.tv_usec,(char *) buf);
-	    fflush(fn);
-	    usleep(10000);
+		printf("%ld %ld: %s\n",(long int)tv.tv_sec,(long int)tv.tv_usec,(char *) buf);
+		fflush(stdout);
+		fprintf(fn,"%ld %ld: %s\n",(long int)tv.tv_sec,(long int)tv.tv_usec,(char *) buf);
+		fflush(fn);
+	    }
+		usleep(10000);
+
 	}
     }
     fclose(fn);
