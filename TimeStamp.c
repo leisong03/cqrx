@@ -6,6 +6,7 @@
 #include "rs232.h"
 #include "CQmsg.h"
 int findapkt(int* start, int *length,unsigned char* msgbuf,int bufsize);
+int pktdecode(unsigned char* inbuf,unsigned char* outbuf,int inbufsize);
 int main(int argc, char** argv){
     cqmsg mymsg;
     int i,n,cport_nr=0,bdrate=19200;
@@ -51,9 +52,15 @@ int main(int argc, char** argv){
 #ifdef debug
 		    fprintf(stderr,"get a pkt\n");
 #endif
+		    unsigned char outbuf[4096];
+		    int outbufsize;
+		    outbufsize=pktdecode(msgbuf+start+1,outbuf,length-2);
+		    if(!outbufsize){
+			fprintf(stderr,"pkt decode error\n");
+		    }
 		    printf("%ld %ld: ",(long int)tv.tv_sec,(long int)tv.tv_usec);
 		    fprintf(fn,"%ld %ld: ",(long int)tv.tv_sec,(long int)tv.tv_usec);
-		    memcpy(&mymsg,msgbuf+start+1,length-2);
+		    memcpy(&mymsg,outbuf,outbufsize);
 		    msgcount=msgcount-length-start+1;
 		    memcpy(msgbuf,msgbuf+start+length,msgcount);
 		    printf("%d %d %d ",mymsg.ID,mymsg.Seq,mymsg.CQLEN);
@@ -98,4 +105,44 @@ int findapkt(int* start, int *length,unsigned char* msgbuf,int bufsize){
 	return 1;
     }
 }
+//0x7E->0x7D 0X5E and  0x7D->0x7D 0X5D
+int pktdecode(unsigned char* inbuf,unsigned char* outbuf,int inbufsize){
+    int outidx=0,inidx=0;
 
+    while(inidx<inbufsize-1){
+	if(inbuf[inidx]!=0x7D){
+	    outbuf[outidx]=inbuf[inidx];
+	    outidx++;
+	    inidx++;
+	}else{
+	    if(inbuf[inidx+1]==0x5D){
+		outbuf[outidx]=0x7D;
+		outidx++;
+		inidx+=2;
+	    }
+	    if(inbuf[inidx+1]==0x5E){
+		outbuf[outidx]=0x7E;
+		outidx++;
+		inidx+=2;
+	    }
+	}
+    }
+    if(inidx==inbufsize-1){
+	outbuf[outidx]=inbuf[inidx];
+	outidx++;
+    }
+#ifdef debug
+    int i;
+    fprintf(stderr,"inbuf=");
+    for(i=0;i<inbufsize;i++){
+	fprintf(stderr,"%02x ",inbuf[i]);
+    }
+    fprintf(stderr,"\n");
+    fprintf(stderr,"outbuf=");
+    for(i=0;i<outidx;i++){
+	fprintf(stderr,"%02x ",outbuf[i]);
+    }
+    fprintf(stderr,"\n");
+#endif
+    return outidx;
+}
