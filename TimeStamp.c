@@ -66,7 +66,7 @@ int main(int argc, char** argv){
 		    }
 		    //printf("%s: ",(long int)tv.tv_sec,(long int)tv.tv_usec);
 		    printf("%s: ",time_string);
-		    fprintf(fn,"%ld %ld: ",(long int)tv.tv_sec,(long int)tv.tv_usec);
+		    fprintf(fn,"%ld %ld ",(long int)tv.tv_sec,(long int)tv.tv_usec);
 		    memcpy(&mymsg,outbuf,outbufsize);
 		    msgcount=msgcount-length-start+1;
 		    memcpy(msgbuf,msgbuf+start+length,msgcount);
